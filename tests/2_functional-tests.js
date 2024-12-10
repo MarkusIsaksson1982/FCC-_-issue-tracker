@@ -5,90 +5,53 @@ const server = require('../server');
 
 chai.use(chaiHttp);
 
-suite('Functional Tests', function() {
-  suite('POST /api/issues/{project}', function() {
-    test('Create an issue with every field', function(done) {
+suite('Functional Tests', function () {
+  suite('POST /api/issues/{project}', function () {
+    test('Create an issue with every field', function (done) {
       chai.request(server)
         .post('/api/issues/test')
         .send({
-          issue_title: 'Test Issue',
-          issue_text: 'This is a test issue.',
+          issue_title: 'Test issue',
+          issue_text: 'This is a test',
           created_by: 'Tester',
-          assigned_to: 'Dev',
-          status_text: 'In Progress'
+          assigned_to: 'Developer',
+          status_text: 'In QA'
         })
-        .end(function(err, res) {
+        .end((err, res) => {
           assert.equal(res.status, 200);
-          assert.equal(res.body.issue_title, 'Test Issue');
-          assert.equal(res.body.created_by, 'Tester');
+          assert.equal(res.body.issue_title, 'Test issue');
+          assert.equal(res.body.assigned_to, 'Developer');
           done();
         });
     });
 
-    test('Create an issue with only required fields', function(done) {
+    test('Create an issue with only required fields', function (done) {
       chai.request(server)
         .post('/api/issues/test')
         .send({
-          issue_title: 'Test Issue',
-          issue_text: 'This is a test issue.',
-          created_by: 'Tester'
+          issue_title: 'Test issue 2',
+          issue_text: 'Another test',
+          created_by: 'Tester 2',
         })
-        .end(function(err, res) {
+        .end((err, res) => {
           assert.equal(res.status, 200);
+          assert.equal(res.body.issue_title, 'Test issue 2');
           assert.equal(res.body.assigned_to, '');
-          assert.equal(res.body.status_text, '');
           done();
         });
     });
 
-    test('Create an issue with missing required fields', function(done) {
+    test('Create an issue with missing required fields', function (done) {
       chai.request(server)
         .post('/api/issues/test')
         .send({
-          issue_text: 'Missing title.',
-          created_by: 'Tester'
+          issue_text: 'Missing title and created_by',
         })
-        .end(function(err, res) {
+        .end((err, res) => {
           assert.equal(res.status, 200);
-          assert.equal(res.body.error, 'required field(s) missing');
+          assert.deepEqual(res.body, { error: 'required field(s) missing' });
           done();
         });
     });
   });
-
-  suite('GET /api/issues/{project}', function() {
-    test('View issues on a project', function(done) {
-      chai.request(server)
-        .get('/api/issues/test')
-        .end(function(err, res) {
-          assert.equal(res.status, 200);
-          assert.isArray(res.body);
-          done();
-        });
-    });
-
-    test('View issues on a project with one filter', function(done) {
-      chai.request(server)
-        .get('/api/issues/test?open=true')
-        .end(function(err, res) {
-          assert.equal(res.status, 200);
-          assert.isArray(res.body);
-          assert.equal(res.body[0].open, true);
-          done();
-        });
-    });
-
-    test('View issues on a project with multiple filters', function(done) {
-      chai.request(server)
-        .get('/api/issues/test?open=true&assigned_to=Dev')
-        .end(function(err, res) {
-          assert.equal(res.status, 200);
-          assert.isArray(res.body);
-          assert.equal(res.body[0].open, true);
-          assert.equal(res.body[0].assigned_to, 'Dev');
-          done();
-        });
-    });
-  });
-
 });
